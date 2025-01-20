@@ -1,6 +1,6 @@
 import './App.css'
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+// import { Search } from 'lucide-react';
 
 interface MovieResult {
     title: string;
@@ -60,11 +60,6 @@ function App() {
   return (
     <>
         <div className="max-w-2xl mx-auto p-4 space-y-6">
-            <div className="space-y-2">
-                <h2 className="text-2xl font-bold">Movie Search</h2>
-                <p className="text-gray-600">Search for movies on Wikipedia</p>
-            </div>
-
             <div className="flex space-x-2">
                 <input
                     type="text"
@@ -80,7 +75,6 @@ function App() {
                     disabled={isLoading}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                    <Search size={20}/>
                     {isLoading ? 'Searching...' : 'Search'}
                 </button>
             </div>
