@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Image as ImageIcon } from 'lucide-react';
 
+import SearchBar from './components/SearchBar';
+
 interface MovieResult {
     title: string;
     snippet: string;
@@ -23,6 +25,7 @@ interface WikiImageResponse {
 
 function App() {
 
+    <SearchBar />
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<MovieResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
