@@ -1,0 +1,16 @@
+
+
+.content-pair {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: start;
+}
+
+.image {
+    flex: 0 0 auto;
+}
+
+.content {
+    flex: 1;
+}

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import "./Search.css";
+
 import SearchBar from '../components/SearchBar';
 
 interface MovieResult {
@@ -101,48 +103,46 @@ function Search() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto p-4 space-y-6">
-            <div className="space-y-2">
-                <h2 className="text-2xl font-bold">Movie Search</h2>
-                <p className="text-gray-600">Search for movies on Wikipedia</p>
+        <div>
+            {/* Top of page */}
+            <div>
+                <h2>Search</h2>
             </div>
 
-            <div className="flex space-x-2">
+            <div>
                 <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Enter a movie title..."
-                    className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                 />
                 <button
                     onClick={searchMovies}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                     {isLoading ? 'Searching...' : 'Search'}
                 </button>
             </div>
 
             {error && (
-                <div className="p-4 bg-red-100 text-red-700 rounded-lg">
+                <div>
                     {error}
                 </div>
             )}
 
-            <div className="space-y-4">
+            {/* Results */}
+            <div>
                 {results.map((movie) => (
-                    <div key={movie.pageid} className="p-4 border rounded-lg flex gap-4">
-                        {/* Image container with smaller fixed dimensions */}
-                        <div className="flex-shrink-0 w-24 h-36">
+                    <div className="content-pair" key={movie.pageid}>
+                        <div className="image">
                             {movie.imageUrl ? (
-                                <div className="w-full h-full relative rounded-lg overflow-hidden">
+                                <div>
                                     <img
                                         src={movie.imageUrl}
                                         alt={`Poster for ${movie.title}`}
-                                        className="w-full h-full object-cover absolute inset-0"
+                                        height="300"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.style.display = 'none';
@@ -153,7 +153,7 @@ function Search() {
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span class="mt-1 text-xs">No image</span>
+                            <span className="image">No image</span>
                           </div>
                         </div>
                       `;
@@ -161,24 +161,22 @@ function Search() {
                                     />
                                 </div>
                             ) : (
-                                <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <div className="text-gray-400 flex flex-col items-center">
-                                        <span className="mt-1 text-xs">No image</span>
+                                <div>
+                                    <div>
+                                        <span>No image</span>
                                     </div>
                                 </div>
                             )}
                         </div>
 
                         {/* Content container */}
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold truncate">{movie.title}</h3>
-                            <p className="text-gray-600 mt-1 line-clamp-3"
-                               dangerouslySetInnerHTML={{ __html: movie.snippet }} />
+                        <div className="content">
+                            <h3>{movie.title}</h3>
+                            <p dangerouslySetInnerHTML={{__html: movie.snippet}}/>
                             <a
                                 href={`https://en.wikipedia.org/?curid=${movie.pageid}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline mt-2 inline-block"
                             >
                                 Read more
                             </a>
@@ -186,12 +184,6 @@ function Search() {
                     </div>
                 ))}
             </div>
-
-            {results.length > 0 && (
-                <p className="text-gray-600 text-sm">
-                    Found {results.length} results
-                </p>
-            )}
         </div>
     );
 }
