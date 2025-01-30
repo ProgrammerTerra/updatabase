@@ -4,7 +4,7 @@ import "./Search.css";
 
 import SearchBar from '../components/SearchBar';
 
-interface MovieResult {
+interface FilmResult {
     title: string;
     snippet: string;
     pageid: number;
@@ -15,6 +15,9 @@ interface WikiImageResponse {
     query: {
         pages: {
             [key: string]: {
+                images: {
+                    title: string;
+                };
                 pageimage?: string;
                 original?: {
                     source: string;
@@ -28,32 +31,68 @@ function Search() {
 
     <SearchBar />
     const [searchTerm, setSearchTerm] = useState('');
-    const [results, setResults] = useState<MovieResult[]>([]);
+    const [results, setResults] = useState<FilmResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchImageForMovie = async (pageId: number): Promise<string | undefined> => {
+    const fetchImageForFilm = async (pageId: number): Promise<string | undefined> => {
         try {
-            const response = await fetch(
+            const images = await fetch(
                 `https://en.wikipedia.org/w/api.php?` +
-                `action=query&format=json&prop=pageimages&` +
-                `piprop=original&origin=*&pageids=${pageId}`
+                `action=query&prop=images&format=json&origin=*&` +
+                `pageids=${pageId}`
             );
 
-            if (!response.ok) {
+            if (!images.ok) {
                 throw new Error('Failed to fetch image');
             }
 
-            const data: WikiImageResponse = await response.json();
-            const page = data.query.pages[pageId];
-            return page.original?.source;
+            const data: WikiImageResponse = await images.json();
+            // const page = data.query.pages[pageId];
+            const responseImages = data.query.pages[pageId].images;
+            let title;
+            console.log("-------------" + data);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            for (const i of responseImages){
+                console.log(i);
+                if(i.title.includes("poster.jpg")){
+                    console.log(i.title)
+                    title = i.title;
+                    break;
+                }
+            }
+
+            try{
+                const image = await fetch(
+                    `https://en.wikipedia.org/w/api.php?` +
+                    `action=query&format=json&prop=imageinfo&` +
+                    `iiprop=url&origin=*&titles=${title}`
+                );
+                //     File:Avatar (2009 film) poster.jpg
+                //     "https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Tree_in_a_Test_Tube%2C_1942_%28full%29.ogv"
+                
+                if (!image.ok) {
+                    throw new Error('Failed to fetch image');
+                }
+
+                const data2: WikiImageResponse = await image.json();
+                const page2 = data2.query.pages[74508300];
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                return page2.imageinfo[0].url;
+            } catch (err) {
+                console.error('Error fetching image:', err);
+                return undefined;
+            }
         } catch (err) {
             console.error('Error fetching image:', err);
             return undefined;
         }
     };
 
-    const searchMovies = async () => {
+    const searchFilms = async () => {
         if (!searchTerm.trim()) {
             setError('Please enter a search term');
             return;
@@ -74,23 +113,23 @@ function Search() {
             }
 
             const data = await response.json();
-            const moviesWithoutImages = data.query.search.map((item: any) => ({
+            const filmsWithoutImages = data.query.search.map((item: any) => ({
                 title: item.title,
                 snippet: item.snippet.replace(/<\/?span[^>]*>/g, ''),
                 pageid: item.pageid
             }));
 
-            const moviesWithImages = await Promise.all(
-                moviesWithoutImages.map(async (movie: { pageid: number; }) => {
-                    const imageUrl = await fetchImageForMovie(movie.pageid);
-                    return { ...movie, imageUrl };
+            const filmsWithImages = await Promise.all(
+                filmsWithoutImages.map(async (film: { pageid: number; }) => {
+                    const imageUrl = await fetchImageForFilm(film.pageid);
+                    return { ...film, imageUrl };
                 })
             );
 
-            setResults(moviesWithImages);
+            setResults(filmsWithImages);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
-            setError('Failed to fetch movies. Please try again.');
+            setError('Failed to fetch films. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -98,7 +137,7 @@ function Search() {
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
-            searchMovies();
+            searchFilms();
         }
     };
 
@@ -115,11 +154,11 @@ function Search() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Enter a movie title..."
+                    placeholder="Enter a film title..."
                     disabled={isLoading}
                 />
                 <button
-                    onClick={searchMovies}
+                    onClick={searchFilms}
                     disabled={isLoading}
                 >
                     {isLoading ? 'Searching...' : 'Search'}
@@ -134,14 +173,14 @@ function Search() {
 
             {/* Results */}
             <div>
-                {results.map((movie) => (
-                    <div className="content-pair" key={movie.pageid}>
+                {results.map((film) => (
+                    <div className="content-pair" key={film.pageid}>
                         <div className="image">
-                            {movie.imageUrl ? (
+                            {film.imageUrl ? (
                                 <div>
                                     <img
-                                        src={movie.imageUrl}
-                                        alt={`Poster for ${movie.title}`}
+                                        src={film.imageUrl}
+                                        alt={`Poster for ${film.title}`}
                                         height="300"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
@@ -171,10 +210,10 @@ function Search() {
 
                         {/* Content container */}
                         <div className="content">
-                            <h3>{movie.title}</h3>
-                            <p dangerouslySetInnerHTML={{__html: movie.snippet}}/>
+                            <h3>{film.title}</h3>
+                            <p dangerouslySetInnerHTML={{__html: film.snippet}}/>
                             <a
-                                href={`https://en.wikipedia.org/?curid=${movie.pageid}`}
+                                href={`https://en.wikipedia.org/?curid=${film.pageid}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
