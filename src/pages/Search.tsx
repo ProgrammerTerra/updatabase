@@ -50,13 +50,14 @@ function Search() {
             const data: WikiImageResponse = await images.json();
             // const page = data.query.pages[pageId];
             const responseImages = data.query.pages[pageId].images;
+            const filmTitle = data.query.pages[pageId].title;
             let title;
             console.log("-------------" + data);
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
             for (const i of responseImages){
                 console.log(i);
-                if(i.title.includes("poster.jpg")){
+                if(i.title.includes("poster.") || i.title.includes(filmTitle.substring(0, 2))){
                     console.log(i.title)
                     title = i.title;
                     break;
@@ -77,11 +78,11 @@ function Search() {
                 }
 
                 const data2: WikiImageResponse = await image.json();
-                const page2 = data2.query.pages[74508300];
-
+                const page2 = data2.query.pages; //[74508300]
+                const imageFile = Object.values(page2)[0].pageid;
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
-                return page2.imageinfo[0].url;
+                return page2[imageFile].imageinfo[0].url;
             } catch (err) {
                 console.error('Error fetching image:', err);
                 return undefined;
